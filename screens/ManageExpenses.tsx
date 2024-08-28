@@ -15,6 +15,10 @@ function ManageExpenses({
   const expenseCtx = useContext(ExpensesContext);
   const editedExpenseId = route?.params?.id;
   const editMode = !!editedExpenseId;
+
+  const defaultEpense = expenseCtx.expenses.find(
+    (expense) => expense.id === editedExpenseId
+  );
   useLayoutEffect(() => {
     navigation.setOptions({
       title: editMode ? "Edit Expense" : "Add Expense",
@@ -24,20 +28,20 @@ function ManageExpenses({
     expenseCtx.deleteExpense(editedExpenseId);
     navigation.goBack();
   }
-  function confirmHandler() {
+  function confirmHandler(data: any) {
     if (editMode) {
       expenseCtx.updateExpense(editedExpenseId, {
-        title: "Test",
-        amount: 100,
-        date: new Date("2024-08-08"),
+        title: data.title,
+        amount: data.amount,
+        date: new Date(data.date),
         id: editedExpenseId,
       });
     } else {
       expenseCtx.addExpense({
-        title: "Test",
-        amount: 100,
-        date: new Date("2024-08-08"),
-        id: Math.random().toString(),
+        title: data.title,
+        amount: data.amount,
+        date: new Date(data.date),
+        id: "C" + Math.random().toString(),
       });
     }
     navigation.goBack();
@@ -47,15 +51,13 @@ function ManageExpenses({
   }
   return (
     <View style={Styles.container}>
-      <ExpensesForm />
-      <View style={Styles.buttonsAction}>
-        <Button mode="flat" onPress={cancelHandler} style={Styles.button}>
-          Cancel
-        </Button>
-        <Button mode="flat" onPress={confirmHandler} style={Styles.button}>
-          {editMode ? "Update" : "Add"}
-        </Button>
-      </View>
+      <ExpensesForm
+        onSubmit={confirmHandler}
+        onCancel={cancelHandler}
+        editProps={editMode}
+        expense={defaultEpense}
+      />
+
       {editMode && (
         <View style={Styles.deletedContainer}>
           <IconButton
@@ -78,15 +80,7 @@ const Styles = StyleSheet.create({
     padding: 24,
     backgroundColor: GlobalStyles.colors.primary800,
   },
-  buttonsAction: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  button: {
-    minWidth: 120,
-    marginHorizontal: 8,
-  },
+
   deletedContainer: {
     marginTop: 16,
     paddingTop: 8,
